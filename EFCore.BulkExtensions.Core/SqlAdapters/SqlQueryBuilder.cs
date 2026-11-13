@@ -76,6 +76,7 @@ public abstract class SqlQueryBuilder
             columnsNames.Remove(tableInfo.TimeStampColumnName);
             timeStampColumn = $", [{tableInfo.TimeStampColumnName}] = CAST('' AS {TableInfo.TimeStampOutColumnType})"; // tsType:varbinary(8)
         }
+
         string temporalTableColumns = "";
         if (tableInfo.HasTemporalColumns && isOutputTable == true)
         {
@@ -110,9 +111,11 @@ public abstract class SqlQueryBuilder
             {
                 columnType = TableInfo.TimeStampOutColumnType;
             }
+
             columnName = columnName.Replace("]", "]]");
             q += $"ALTER TABLE {tableName} ALTER COLUMN [{columnName}] {columnType}; ";
         }
+
         return q;
     }
 
@@ -135,6 +138,7 @@ public abstract class SqlQueryBuilder
         {
             columnsNames.Remove(tableInfo.TimeStampColumnName);
         }
+
         var columnsNamesAndTypes = new List<Tuple<string, string>>();
         foreach (var columnName in columnsNames)
         {
@@ -142,12 +146,15 @@ public abstract class SqlQueryBuilder
             {
                 throw new InvalidOperationException($"Column Type not found in ColumnNamesTypesDict for column: '{columnName}'");
             }
+
             columnsNamesAndTypes.Add(new Tuple<string, string>(columnName, columnType));
         }
+
         if (tableInfo.BulkConfig.CalculateStats && isOutputTable)
         {
             columnsNamesAndTypes.Add(new Tuple<string, string>("[SqlActionIUD]", "char(1)"));
         }
+
         var q = $"CREATE TABLE {newTableName} ({GetCommaSeparatedColumnsAndTypes(columnsNamesAndTypes)});";
         return q;
     }
@@ -215,6 +222,7 @@ public abstract class SqlQueryBuilder
         {
             q = $"IF OBJECT_ID ('{tableName}', 'U') IS NOT NULL DROP TABLE {tableName}";
         }
+
         return q;
     }
 
@@ -249,6 +257,7 @@ public abstract class SqlQueryBuilder
         {
             q = $"IF OBJECT_ID ('{fullTableName}', 'U') IS NOT NULL SELECT 1 AS res ELSE SELECT 0 AS res;";
         }
+
         return q;
     }
 
@@ -417,10 +426,12 @@ public abstract class SqlQueryBuilder
             q += (softDeleteAssignment != string.Empty) ? $" THEN UPDATE SET {softDeleteAssignment}"
                                                         : $" THEN DELETE";
         }
+
         if (operationType == OperationType.Delete)
         {
             q += " WHEN MATCHED THEN DELETE";
         }
+
         if (tableInfo.CreateOutputTable)
         {
             string commaSeparatedColumnsNames;
@@ -432,9 +443,11 @@ public abstract class SqlQueryBuilder
             {
                 commaSeparatedColumnsNames = GetCommaSeparatedColumns(outputColumnsNames, "INSERTED");
             }
+
             q += $" OUTPUT {commaSeparatedColumnsNames}" + isUpdateStatsValue +
                  $" INTO {tableInfo.FullTempOutputTableName}";
         }
+
         if(tableInfo.BulkConfig.UseOptionLoopJoin)
         {
             q += " OPTION (LOOP JOIN)";
@@ -462,11 +475,13 @@ public abstract class SqlQueryBuilder
                 {
                     qSegmentUpdated = qSegmentUpdated.Replace(propertyFormated, $"[{sourceProperty}]");
                 }
+
                 if (q.Contains(propertySourceFormated))
                 {
                     q = q.Replace(propertySourceFormated, $"S.[{sourceProperty}]");
                 }
             }
+
             if (qSegment != qSegmentUpdated)
             {
                 q = q.Replace(qSegment, qSegmentUpdated);
@@ -486,7 +501,6 @@ public abstract class SqlQueryBuilder
         var q = $"TRUNCATE TABLE {tableName};";
         return q;
     }
-
 
     /// <summary>
     /// Used for Sqlite, Truncate table 
@@ -522,13 +536,14 @@ public abstract class SqlQueryBuilder
             commaSeparatedColumns += equalsTable != "" ? $" = {equalsTable}[{equalsParameter}]" : "";
             commaSeparatedColumns += ", ";
         }
+
         if (commaSeparatedColumns != "")
         {
             commaSeparatedColumns = commaSeparatedColumns.Remove(commaSeparatedColumns.Length - 2, 2); // removes last excess comma and space: ", "
         }
+
         return commaSeparatedColumns;
     }
-
 
     /// <summary>
     /// Generates a comma seperated column list with its SQL data type
@@ -542,10 +557,12 @@ public abstract class SqlQueryBuilder
         {
             commaSeparatedColumns += $"[{columnNameAndType.Item1}] {columnNameAndType.Item2}, ";
         }
+
         if (commaSeparatedColumns != "")
         {
             commaSeparatedColumns = commaSeparatedColumns.Remove(commaSeparatedColumns.Length - 2, 2); // removes last excess comma and space: ", "
         }
+
         return commaSeparatedColumns;
     }
 
@@ -575,10 +592,12 @@ public abstract class SqlQueryBuilder
                 string columnNullable = $"({column.Trim()} OR ({columnT} IS NULL AND {columnS} IS NULL))";
                 commaSeparatedColumnsNullable += columnNullable + ", ";
             }
+
             if (commaSeparatedColumns != "")
             {
                 commaSeparatedColumnsNullable = commaSeparatedColumnsNullable.Remove(commaSeparatedColumnsNullable.Length - 2, 2);
             }
+
             commaSeparatedColumns = commaSeparatedColumnsNullable;
         }
 

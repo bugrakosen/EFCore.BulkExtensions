@@ -211,7 +211,6 @@ internal static class DbContextBulkTransactionGraphUtil
                     if (processedPks.Add(primaryKeyComparer))
                         yield return entity;
                 }
-
             }
             else
             {

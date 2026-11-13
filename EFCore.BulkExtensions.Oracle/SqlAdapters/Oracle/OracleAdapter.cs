@@ -37,6 +37,7 @@ public class OracleAdapter : ISqlOperationsAdapter
         {
             dbContext.Database.OpenConnection();
         }
+
         var connection = dbContext.GetUnderlyingConnection(tableInfo.BulkConfig);
         try
         {
@@ -75,6 +76,7 @@ public class OracleAdapter : ISqlOperationsAdapter
                 dbContext.Database.CloseConnection();
             }
         }
+
         if (!tableInfo.CreateOutputTable)
         {
             tableInfo.CheckToSetIdentityForPreserveOrder(tableInfo, entities, reset: true);
@@ -203,11 +205,13 @@ public class OracleAdapter : ISqlOperationsAdapter
                     var sqlDropOutputTable = ProviderSqlQueryBuilder.DropTable(tableInfo.FullTempOutputTableName, tableInfo.BulkConfig.UseTempDB);
                     await ExecuteSqlRawAsync(dbContext, isAsync, sqlDropOutputTable, cancellationToken).ConfigureAwait(false);
                 }
+
                 if (tempTableCreated)
                 {
                     var sqlDropTable = ProviderSqlQueryBuilder.DropTable(tableInfo.FullTempTableName, tableInfo.BulkConfig.UseTempDB);
                     await ExecuteSqlRawAsync(dbContext, isAsync, sqlDropTable, cancellationToken).ConfigureAwait(false);
                 }
+
                 if (hasExistingTransaction == false && !tableInfo.BulkConfig.IncludeGraph && transaction != null)
                 {
                     if (isAsync)
@@ -279,8 +283,10 @@ public class OracleAdapter : ISqlOperationsAdapter
             {
                 connection.Open();
             }
+
             oonnectionOpenedInternally = true;
         }
+
         return (connection, oonnectionOpenedInternally);
     }
 
@@ -322,6 +328,7 @@ public class OracleAdapter : ISqlOperationsAdapter
                 }
             }
         }
+
         return (hasUniqueConstrain, connectionOpenedInternally);
     }
 
@@ -367,6 +374,7 @@ public class OracleAdapter : ISqlOperationsAdapter
             OracleBulkCopy.ColumnMappings.Add(new OracleBulkCopyColumnMapping(sourceOrdinal, item.ColumnName));
             sourceOrdinal++;
         }
+
         return dataTable;
     }
 
@@ -547,6 +555,7 @@ public class OracleAdapter : ISqlOperationsAdapter
             dataTable.Columns.Add(discriminatorColumn, discriminatorProperty.ClrType);
             columnsDict.Add(discriminatorColumn, entityType.GetDiscriminatorValue());
         }
+
         bool hasConverterProperties = tableInfo.ConvertiblePropertyColumnDict.Count > 0;
 
         foreach (T entity in entities)
@@ -647,6 +656,7 @@ public class OracleAdapter : ISqlOperationsAdapter
             var stringColumns = tableInfo.ColumnNamesTypesDict.Where(a => a.Value.Contains("char")).Select(a => a.Key).ToList();
             discriminatorColumn = tableInfo.ShadowProperties.Where(a => stringColumns.Contains(a)).ElementAt(0);
         }
+
         return discriminatorColumn;
     }
     #endregion

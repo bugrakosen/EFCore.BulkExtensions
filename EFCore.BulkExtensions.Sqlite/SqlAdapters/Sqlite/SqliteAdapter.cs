@@ -40,6 +40,7 @@ public class SqliteAdapter : ISqlOperationsAdapter
             connection = isAsync ? await OpenAndGetSqliteConnectionAsync(dbContext, cancellationToken).ConfigureAwait(false)
                                  : OpenAndGetSqliteConnection(dbContext);
         }
+
         bool doExplicitCommit = false;
 
         try
@@ -79,8 +80,10 @@ public class SqliteAdapter : ISqlOperationsAdapter
                 {
                     command.ExecuteNonQuery();
                 }
+
                 ProgressHelper.SetProgress(ref rowsCopied, entities.Count(), tableInfo.BulkConfig, progress);
             }
+
             if (doExplicitCommit)
             {
                 transaction?.Commit();
@@ -130,6 +133,7 @@ public class SqliteAdapter : ISqlOperationsAdapter
                 //context.Database.UseTransaction(connection.BeginTransaction());
                 doExplicitCommit = true;
             }
+
             var dbTransaction = doExplicitCommit ? connection.BeginTransaction()
                                                  : dbContext.Database.CurrentTransaction?.GetUnderlyingTransaction(tableInfo.BulkConfig);
             var transaction = (SqliteTransaction?)dbTransaction;
@@ -150,6 +154,7 @@ public class SqliteAdapter : ISqlOperationsAdapter
                 {
                     command.ExecuteNonQuery();
                 }
+
                 ProgressHelper.SetProgress(ref rowsCopied, entities.Count(), tableInfo.BulkConfig, progress);
             }
 
@@ -243,6 +248,7 @@ public class SqliteAdapter : ISqlOperationsAdapter
             {
                 command.ExecuteNonQuery();
             }
+
             tempTableCreated = true;
 
             tableInfo.BulkConfig.OperationType = OperationType.Insert;
@@ -374,6 +380,7 @@ public class SqliteAdapter : ISqlOperationsAdapter
         {
             throw new ArgumentException("Unable to determine entity type");
         }
+
         var entityType = context.Model.FindEntityType(type);
         var entityPropertiesDict = entityType?.GetProperties().Where(a => tableInfo.PropertyColumnNamesDict.ContainsKey(a.Name)).ToDictionary(a => a.Name, a => a);
         var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);

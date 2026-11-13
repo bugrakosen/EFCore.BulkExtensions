@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 
 namespace EFCore.BulkExtensions.SqlAdapters;
 
-
 /// <summary>
 /// Contains the table alias and SQL query
 /// </summary>

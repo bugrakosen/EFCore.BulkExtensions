@@ -27,7 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EFCore.BulkExtensions\EFCore.BulkExtensions.csproj" />
-	<ProjectReference Include="..\EFCore.BulkExtensions.MySql\EFCore.BulkExtensions.MySql.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="testsettings.local.json">

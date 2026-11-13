@@ -156,6 +156,7 @@ public class EFCoreBulkTestAsync
                     {
                         subEntity.ItemId = entity.ItemId; // setting FK to match its linked PK that was generated in DB
                     }
+
                     subEntities.AddRange(entity.ItemHistories);
                 }
 
@@ -179,8 +180,10 @@ public class EFCoreBulkTestAsync
                     {
                         subEntity.ItemId = entity.ItemId; // setting FK to match its linked PK that was generated in DB
                     }
+
                     subEntities.AddRange(entity.ItemHistories);
                 }
+
                 await context.BulkInsertAsync(subEntities, bulkConfig);
 
                 await transaction.CommitAsync();
@@ -219,6 +222,7 @@ public class EFCoreBulkTestAsync
                 TimeUpdated = dateTimeNow,
             });
         }
+
         if (isBulk)
         {
             var bulkConfig = new BulkConfig()
@@ -335,6 +339,7 @@ public class EFCoreBulkTestAsync
             entity.Description = "Desc Update " + counter++;
             entity.TimeUpdated = DateTime.Now;
         }
+
         if (isBulk)
         {
             var bulkConfig = new BulkConfig() { SetOutputIdentity = true, CalculateStats = true };

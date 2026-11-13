@@ -36,6 +36,7 @@ public class EFCoreBulkTestOracle
                 Category = new ItemCategory { Id = i, Name = "Some " + i }
             });
         }
+
         context.BulkInsert(items);
 
         var result = context.Items.AsNoTracking().First(x => x.ItemId == items[0].ItemId);
@@ -62,6 +63,7 @@ public class EFCoreBulkTestOracle
                 Category = new ItemCategory { Id = i, Name = "Some " + i }
             });
         }
+
         context.BulkUpdate(items);
 
         var result = context.Items.AsNoTracking().First(x => x.ItemId == items[0].ItemId);
@@ -88,6 +90,7 @@ public class EFCoreBulkTestOracle
                 Category = new ItemCategory { Id = i, Name = "Some " + i }
             });
         }
+
         for (int i = EntitiesNumber; i <= (EntitiesNumber + 10); i++)
         {
             items.Add(new Item
@@ -101,6 +104,7 @@ public class EFCoreBulkTestOracle
                 Category = new ItemCategory { Id = i, Name = "Some " + i }
             });
         }
+
         context.BulkInsertOrUpdate(items);
 
         var result = context.Items.AsNoTracking().First(x => x.ItemId == items[0].ItemId);
@@ -127,6 +131,7 @@ public class EFCoreBulkTestOracle
                 Category = new ItemCategory { Id = i, Name = "Some " + i }
             });
         }
+
         context.BulkDelete(items);
 
         var result = context.Items.AsNoTracking().FirstOrDefault(x => x.ItemId == items[0].ItemId);

@@ -28,7 +28,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
     }
 
     /// <inheritdoc/>
-    public async Task InsertAsync<T>(BulkContext context, Type type, IEnumerable<T> entities, TableInfo tableInfo, Action<decimal>? progress, 
+    public async Task InsertAsync<T>(BulkContext context, Type type, IEnumerable<T> entities, TableInfo tableInfo, Action<decimal>? progress,
         CancellationToken cancellationToken)
     {
         await InsertAsync(context, type, entities, tableInfo, progress, isAsync: true, cancellationToken).ConfigureAwait(false);
@@ -36,7 +36,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
     // Public Async and NonAsync are merged into single operation flow with protected method using arg: bool isAsync (keeps code DRY)
     // https://docs.microsoft.com/en-us/archive/msdn-magazine/2015/july/async-programming-brownfield-async-development#the-flag-argument-hack
     /// <inheritdoc/>
-    protected static async Task InsertAsync<T>(BulkContext context, Type type, IEnumerable<T> entities, TableInfo tableInfo, Action<decimal>? progress, 
+    protected static async Task InsertAsync<T>(BulkContext context, Type type, IEnumerable<T> entities, TableInfo tableInfo, Action<decimal>? progress,
         bool isAsync, CancellationToken cancellationToken)
     {
         var dbContext = context.DbContext;
@@ -49,6 +49,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
         {
             dbContext.Database.OpenConnection();
         }
+
         var connection = dbContext.GetUnderlyingConnection(tableInfo.BulkConfig);
 
         try
@@ -65,7 +66,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
 
                 if (isAsync)
                 {
-                    if(dataReader == null)
+                    if (dataReader == null)
                         await sqlBulkCopy.WriteToServerAsync(dataTable, cancellationToken).ConfigureAwait(false);
                     else
                         await sqlBulkCopy.WriteToServerAsync(dataReader, cancellationToken).ConfigureAwait(false);
@@ -102,6 +103,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                         }
                     }
                 }
+
                 throw;
             }
         }
@@ -116,6 +118,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                 dbContext.Database.CloseConnection();
             }
         }
+
         if (!tableInfo.CreateOutputTable)
         {
             tableInfo.CheckToSetIdentityForPreserveOrder(tableInfo, entities, reset: true);
@@ -159,6 +162,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(sqlCreateTableCopy);
                 }
+
                 tempTableCreated = true;
 
                 if (isAsync)
@@ -182,6 +186,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(sqlCreateOutputTableCopy);
                 }
+
                 outputTableCreated = true;
 
                 if (operationType == OperationType.InsertOrUpdateOrDelete)
@@ -212,6 +217,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                     dbContext.Database.OpenConnection();
                     dbContext.Database.ExecuteSqlRaw(sqlSetIdentityInsertTrue);
                 }
+
                 identityInsertIsSet = true;
             }
 
@@ -265,6 +271,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                         dbContext.Database.ExecuteSqlRaw(sqlDropOutputTable);
                     }
                 }
+
                 if (tempTableCreated) // otherwise following lines execute the drop
                 {
                     var sqlDropTable = new SqlServerQueryBuilder().DropTable(tableInfo.FullTempTableName, tableInfo.BulkConfig.UseTempDB);
@@ -290,6 +297,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(sqlSetIdentityInsertFalse);
                 }
+
                 dbContext.Database.CloseConnection();
             }
         }
@@ -325,6 +333,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
             {
                 dbContext.Database.ExecuteSqlRaw(sqlCreateTableCopy);
             }
+
             tempTableCreated = true;
 
             if (isAsync)
@@ -405,9 +414,10 @@ public class SqlServerAdapter : ISqlOperationsAdapter
         var sqlBulkCopy = new SqlBulkCopy(sqlConnection, (Microsoft.Data.SqlClient.SqlBulkCopyOptions)config.SqlBulkCopyOptions, sqlTransaction);
         if (config.SqlBulkCopyColumnOrderHints != null)
         {
-            foreach(var hint in config.SqlBulkCopyColumnOrderHints)
+            foreach (var hint in config.SqlBulkCopyColumnOrderHints)
                 sqlBulkCopy.ColumnOrderHints.Add(new Microsoft.Data.SqlClient.SqlBulkCopyColumnOrderHint(hint.Column, (Microsoft.Data.SqlClient.SortOrder)hint.SortOrder));
         }
+
         return sqlBulkCopy;
     }
     /// <summary>
@@ -461,6 +471,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
         {
             sqlBulkCopy.ColumnMappings.Add(item.ColumnName, item.ColumnName);
         }
+
         return dataTable;
     }
 
@@ -533,6 +544,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                         throw new InvalidOperationException("OnCompare properties Config can not be set for Entity with Spatial types like 'Geometry'");
                     }
                 }
+
                 if (isSqlServer && (propertyType == typeof(HierarchyId) || propertyType.IsSubclassOf(typeof(HierarchyId))))
                 {
                     propertyType = typeof(byte[]);
@@ -590,7 +602,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                     var ownedEntityType = ownedList.Count() == 1
                          ? ownedList[0] // IsInOwnershipPath fix for with multiple parents (issue #1149)
                          : dbContext.Model.GetEntityTypes().SingleOrDefault(x => x.ClrType == property.PropertyType && x.Name.StartsWith(entityType.Name + "." + property.Name + "#"));
-                           // fix when entity has more then one ownedType (e.g. Address HomeAddress, Address WorkAddress) or one ownedType is in multiple Entities like Audit is usually.
+                    // fix when entity has more then one ownedType (e.g. Address HomeAddress, Address WorkAddress) or one ownedType is in multiple Entities like Audit is usually.
 
                     prefix += $"{property.Name}_";
 
@@ -645,6 +657,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
 
                                     dataTable.Columns.Add(columnName, ownedPropertyType);
                                 }
+
                                 columnsDict.Add(propertyName, null);
                             }
                             else if (tableInfo.OwnedRegularTypesDict.TryGetValue(propertyName, out var navigation) && navigation.PropertyInfo is not null)
@@ -710,6 +723,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
             dataTable.Columns.Add(discriminatorColumn, discriminatorProperty.ClrType);
             columnsDict.Add(discriminatorColumn, entityType.GetDiscriminatorValue());
         }
+
         bool hasConverterProperties = tableInfo.ConvertiblePropertyColumnDict.Count > 0;
 
         foreach (T entity in entities)
@@ -777,6 +791,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                     //hierarchyValue.Write(binWriter); // removed as of EF8 (throws: Error CS1061  'HierarchyId' does not contain a definition for 'Write' and no accessible extension method 'Write' accepting a first argument of type 'HierarchyId' could be found.
                     propertyValue = memStream.ToArray();
                 }
+
                 var omitTimeStamp = property.Name == tableInfo.TimeStampPropertyName && tableInfo.BulkConfig.DoNotUpdateIfTimeStampChanged == false;
                 if (entityPropertiesDict.ContainsKey(property.Name) && !hasDefaultVauleOnInsert && !omitTimeStamp)
                 {
@@ -789,7 +804,8 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                     if (!entityPropertiesDict.TryGetValue(columnName, out var entityProperty) || entityProperty is null)
                     {
                         continue; // BulkRead
-                    };
+                    }
+                    ;
                     columnsDict[columnName] = propertyValue == null
                         ? null
                         : foreignKeyShadowProperty.FindFirstPrincipal()?.PropertyInfo?.GetValue(propertyValue); // TODO Check if can be optimized
@@ -895,6 +911,7 @@ public class SqlServerAdapter : ISqlOperationsAdapter
                 discriminatorColumn = shadowProps.ElementAt(0);
             }
         }
+
         return discriminatorColumn;
     }
     #endregion

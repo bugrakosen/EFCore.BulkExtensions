@@ -14,6 +14,7 @@ public static class DbContextUnderlyingExtensions
         {
             connection = config.UnderlyingConnection(connection);
         }
+
         return connection;
     }
 
@@ -24,6 +25,7 @@ public static class DbContextUnderlyingExtensions
         {
             dbTransaction = config.UnderlyingTransaction(dbTransaction);
         }
+
         return dbTransaction;
     }
 }

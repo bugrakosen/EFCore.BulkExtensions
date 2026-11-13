@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using EFCore.BulkExtensions.SqlAdapters;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -8,8 +10,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
-using EFCore.BulkExtensions.SqlAdapters;
-using Microsoft.EntityFrameworkCore;
 
 namespace EFCore.BulkExtensions;
 
@@ -52,12 +52,14 @@ public static class IQueryableExtensions
             command = (IRelationalCommand?)relationalCommandCache?.GetRelationalCommandTemplate(parameterValues);
 #pragma warning restore EF1001
         }
+
         if (command == null && relationalCommandResolver != null)
         {
 #pragma warning disable EF1001 // Internal EF Core API usage.
             command = (IRelationalCommand?)relationalCommandResolver.DynamicInvoke(parameterValues);
 #pragma warning restore EF1001
         }
+
         if (command == null)
         {
             string selectExpressionText = "_selectExpression";
@@ -66,6 +68,7 @@ public static class IQueryableExtensions
             IQuerySqlGeneratorFactory factory = enumerator.Private<IQuerySqlGeneratorFactory>(querySqlGeneratorFactoryText) ?? throw new InvalidOperationException($"{cannotGetText} {querySqlGeneratorFactoryText}");
             command = factory.Create().GetCommand(selectExpression);
         }
+
         string sql = command.CommandText;
 
         IList<DbParameter> parameters;
@@ -77,6 +80,7 @@ public static class IQueryableExtensions
                 var values = parameterValues[param.InvariantName];
                 param.AddDbParameter(dbCommand, values);
             }
+
             parameters = new List<DbParameter>(dbCommand.Parameters.OfType<DbParameter>());
             dbCommand.Parameters.Clear();
         }
@@ -98,12 +102,13 @@ public static class IQueryableExtensions
                 throw;
             }
         }
+
         return (sql, parameters);
     }
 
-    private static readonly BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+    private static readonly BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-    private static object? Private(this object obj, string privateField) => obj?.GetType().GetField(privateField, bindingFlags)?.GetValue(obj);
+    private static object? Private(this object obj, string privateField) => obj?.GetType().GetField(privateField, _bindingFlags)?.GetValue(obj);
 
-    private static T? Private<T>(this object obj, string privateField) => (T?)obj?.GetType().GetField(privateField, bindingFlags)?.GetValue(obj);
+    private static T? Private<T>(this object obj, string privateField) => (T?)obj?.GetType().GetField(privateField, _bindingFlags)?.GetValue(obj);
 }

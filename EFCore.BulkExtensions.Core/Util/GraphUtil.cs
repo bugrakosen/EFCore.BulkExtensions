@@ -110,6 +110,7 @@ internal class GraphUtil
             graphDependency.DependsOn.Add((navigationValue, navigation));
             nestedDependency.Dependents.Add((graphEntity, navigation.Inverse ?? navigation));
         }
+
         if (!navigation.IsOnDependent)
         {
             graphDependency.Dependents.Add((navigationValue, navigation));

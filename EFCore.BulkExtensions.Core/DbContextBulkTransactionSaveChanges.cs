@@ -38,6 +38,7 @@ internal static class DbContextBulkTransactionSaveChanges
         {
             bulkConfig = new BulkConfig { };
         }
+
         if (bulkConfig.OnSaveChangesSetFK && bulkConfig.SetOutputIdentity == false) // When FK is set by DB then SetOutput is required
         {
             bulkConfig.SetOutputIdentity = true;
@@ -90,6 +91,7 @@ internal static class DbContextBulkTransactionSaveChanges
         {
             dbContext.Database.OpenConnection();
         }
+
         var connection = dbContext.GetUnderlyingConnection(bulkConfig);
 
         var hasExistingTransaction = dbContext.Database.CurrentTransaction != null || Transaction.Current != null;
@@ -122,6 +124,7 @@ internal static class DbContextBulkTransactionSaveChanges
                                 entityPropertyDict.Add(property.Name, FastProperty.GetOrCreate(property.PropertyInfo));
                             }
                         }
+
                         foreach (var navigationPropertyInfo in navigationPropertiesInfo)
                         {
                             if (navigationPropertyInfo != null)
@@ -129,6 +132,7 @@ internal static class DbContextBulkTransactionSaveChanges
                                 entityPropertyDict.Add(navigationPropertyInfo.Name, FastProperty.GetOrCreate(navigationPropertyInfo));
                             }
                         }
+
                         fastPropertyDicts.Add(entityType.Name, entityPropertyDict);
                     }
                     else
@@ -169,10 +173,8 @@ internal static class DbContextBulkTransactionSaveChanges
                                                     entityPropertyDict[fkName].Set(entity, pkValue);
                                                 }
                                             }
-
                                         }
                                     }
-
                                 }
                             }
                         }
@@ -204,6 +206,7 @@ internal static class DbContextBulkTransactionSaveChanges
                     }
                 }
             }
+
             if (!hasExistingTransaction)
             {
                 transaction!.Commit();
@@ -249,7 +252,6 @@ internal static class DbContextBulkTransactionSaveChanges
                     await task.ConfigureAwait(false);
                 }
             }
-
         }
         else
         {
@@ -265,7 +267,7 @@ internal static class DbContextBulkTransactionSaveChanges
         { EntityState.Modified, new KeyValuePair<string, int>(nameof(DbContextBulkExtensions.BulkUpdate), 2) },
         { EntityState.Added, new KeyValuePair<string, int>(nameof(DbContextBulkExtensions.BulkInsert), 3)},
     };
-#endregion
+    #endregion
 
     private static List<BulkMethodEntries> GetBulkMethodEntries(IEnumerable<EntityEntry> entries)
     {
@@ -296,7 +298,9 @@ internal static class DbContextBulkTransactionSaveChanges
                     childNode = new DbNode() { Type = navType };
 
                     tree.TryAdd(navType, childNode);
-                };
+                }
+
+                ;
 
                 if (!childNode.Parents.Any(a => a.Type == node.Type))
                 {
@@ -316,7 +320,9 @@ internal static class DbContextBulkTransactionSaveChanges
                 {
                     parentNode = new DbNode() { Type = navType };
                     tree.TryAdd(navType, parentNode);
-                };
+                }
+
+                ;
 
                 if (!parentNode.Children.Any(a => a.Type == node.Type))
                 {
@@ -376,7 +382,6 @@ internal static class DbContextBulkTransactionSaveChanges
     }
 
     private static Type GetNonProxyType(Type type) => type.Namespace == "Castle.Proxies" ? type.BaseType! : type;
-
 
     internal class BulkMethodEntries
     {

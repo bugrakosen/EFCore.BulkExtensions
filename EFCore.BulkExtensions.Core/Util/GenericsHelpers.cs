@@ -22,6 +22,7 @@ public static class GenericsHelpers
             {
                 continue;
             }
+
             var name = field.Name;
             if (!tableInfo.PropertyColumnNamesDict.ContainsKey(name)) // skip non-EF properties
             {

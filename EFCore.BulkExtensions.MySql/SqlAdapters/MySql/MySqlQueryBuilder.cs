@@ -117,6 +117,7 @@ public class MySqlQueryBuilder : SqlQueryBuilder
                 q += $"ON DUPLICATE KEY UPDATE " +
                      $"{equalsColumns}";
             }
+
             q += "; ";
 
             if (tableInfo.CreateOutputTable)
@@ -130,6 +131,7 @@ public class MySqlQueryBuilder : SqlQueryBuilder
                         q += $"WHERE {firstPrimaryKey} >= LAST_INSERT_ID() " +
                         $"AND {firstPrimaryKey} < LAST_INSERT_ID() + row_count(); ";
                     }
+
                     q += "; ";
                 }
                 else if (operationType == OperationType.Update)
@@ -168,16 +170,19 @@ public class MySqlQueryBuilder : SqlQueryBuilder
                 {
                     qSegmentUpdated = qSegmentUpdated.Replace(propertyFormated, sourceProperty);
                 }
+
                 if (q.Contains(propertySourceFormated))
                 {
                     q = q.Replace(propertySourceFormated, $"EXCLUDED.`{sourceProperty}`");
                 }
             }
+
             if (qSegment != qSegmentUpdated)
             {
                 q = q.Replace(qSegment, qSegmentUpdated);
             }
         }
+
         return q;
     }
     /// <summary>
@@ -284,6 +289,7 @@ public class MySqlQueryBuilder : SqlQueryBuilder
         {
             uniqueConstrainNameText = Md5Hash(uniqueConstrainNameText);
         }
+
         string uniqueConstrainName = uniqueConstrainPrefix + uniqueConstrainNameText;
         return uniqueConstrainName;
     }

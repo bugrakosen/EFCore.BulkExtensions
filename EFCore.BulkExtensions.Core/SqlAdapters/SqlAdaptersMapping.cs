@@ -40,7 +40,7 @@ public static class SqlAdaptersMapping
 {
     public static Func<DbContext, IDbServer>? Provider { get; set; }
 
-    private static IDbServer? _dbServer { get; set; }
+    private static IDbServer? DbServer1 { get; set; }
 
     /// <summary>
     /// Contains a list of methods to generate Adapters and helpers instances
@@ -79,7 +79,7 @@ public static class SqlAdaptersMapping
             databaseType = SqlType.Oracle;
         }
 
-        if (_dbServer == null || _dbServer.Type != databaseType)
+        if (DbServer1 == null || DbServer1.Type != databaseType)
         {
             static Type GetType(SqlType type)
             {
@@ -90,11 +90,11 @@ public static class SqlAdaptersMapping
                     throw new InvalidOperationException("Failed to resolve type.");
             }
 
-            _dbServer = Activator.CreateInstance(GetType(databaseType)) as IDbServer;
+            DbServer1 = Activator.CreateInstance(GetType(databaseType)) as IDbServer;
         }
 
-
-        return _dbServer ?? throw new InvalidOperationException("Failed to create DbServer");
+        return DbServer1
+            ?? throw new InvalidOperationException("Failed to create DbServer");
     }
 
     private static IDbServer? TryGetServer(DbContext context)

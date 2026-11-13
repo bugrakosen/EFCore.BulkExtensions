@@ -92,14 +92,12 @@ public class TableInfo
     //internal SqliteConnection? SqliteConnection { get; set; }
     //internal SqliteTransaction? SqliteTransaction { get; set; }
 
-
     ////PostgreSql
     //internal NpgsqlConnection? NpgsqlConnection { get; set; }
     ////internal NpgsqlTransaction? NpgsqlTransaction { get; set; }
 
     ////MySql
     //internal MySqlConnection? MySqlConnection { get; set; }
-
 
 #pragma warning restore CS1591 // No XML comments required here.
 
@@ -137,7 +135,7 @@ public class TableInfo
 
     #region Main
     /// <summary>
-    /// Configures the table info based on entity data 
+    /// Configures the table info based on entity data
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="context"></param>
@@ -159,6 +157,7 @@ public class TableInfo
             entityType = dbContext.Model.FindEntityType(type);
             HasAbstractList = true;
         }
+
         if (entityType == null)
         {
             throw new InvalidOperationException($"DbContext does not contain EntitySet for Type: {type?.Name}");
@@ -198,8 +197,8 @@ public class TableInfo
         var entityTableName = entityType.GetTableName();
         var entityViewName = entityType.GetViewName();
         bool isView = entityTableName == null && entityViewName != null;
-        
-        if(isView)
+
+        if (isView)
             Schema = customTableName != null ? customSchema : entityType.GetViewSchema() ?? defaultSchema;
         else
             Schema = customTableName != null ? customSchema : entityType.GetSchema() ?? defaultSchema;
@@ -217,6 +216,7 @@ public class TableInfo
                 sourceSchema = tableNameSplitList[0];
                 sourceTableName = tableNameSplitList[1];
             }
+
             BulkConfig.UseTempDB = false;
         }
 
@@ -226,8 +226,9 @@ public class TableInfo
         {
             // 8 chars of Guid as tableNameSufix to avoid same name collision with other tables
             TempTableSufix += Guid.NewGuid().ToString()[..8];
-            // TODO Consider Hash                                                             
+            // TODO Consider Hash
         }
+
         TempTableName = sourceTableName ?? $"{TableName}{TempTableSufix}";
 
         if ((!isView && entityTableName is null) || (isView && entityViewName is null))
@@ -235,8 +236,8 @@ public class TableInfo
             throw new ArgumentException("Entity does not contain a table or view name");
         }
 
-        ObjectIdentifier = isView 
-            ? StoreObjectIdentifier.View(entityViewName!, entityType.GetViewSchema()) 
+        ObjectIdentifier = isView
+            ? StoreObjectIdentifier.View(entityViewName!, entityType.GetViewSchema())
             : StoreObjectIdentifier.Table(entityTableName!, entityType.GetSchema());
 
         var allProperties = new List<IProperty>();
@@ -334,6 +335,7 @@ public class TableInfo
                 {
                     hasIdentity = SqlAdaptersMapping.DbServer(dbContext).PropertyHasIdentity(annotation);
                 }
+
                 if (hasIdentity)
                 {
                     IdentityColumnName = property.GetColumnName(ObjectIdentifier);
@@ -341,6 +343,7 @@ public class TableInfo
                 }
             }
         }
+
         if (isSqlite) // SQLite no ValueGenerationStrategy
         {
             // for HiLo on SqlServer was returning True when should be False
@@ -368,8 +371,6 @@ public class TableInfo
                     BulkConfig.PropertiesToExclude.Add(prop);
             }
         }
-
-
 
         // timestamp/row version properties are only set by the Db, the property has a [Timestamp] Attribute or is configured in FluentAPI with .IsRowVersion()
         // They can be identified by the columne type "timestamp" or .IsConcurrencyToken in combination with .ValueGenerated == ValueGenerated.OnAddOrUpdate
@@ -464,7 +465,7 @@ public class TableInfo
 
             if (property.IsShadowProperty() && property.IsForeignKey())
             {
-                // TODO: Does Shadow ForeignKey Property aways contain only one ForgeignKey? 
+                // TODO: Does Shadow ForeignKey Property aways contain only one ForgeignKey?
                 var navigationProperty = property.GetContainingForeignKeys().FirstOrDefault()?.DependentToPrincipal?.PropertyInfo;
                 if (navigationProperty is not null)
                 {
@@ -505,11 +506,13 @@ public class TableInfo
             {
                 throw new MultiplePropertyListSetException(nameof(BulkConfig.PropertiesToInclude), nameof(BulkConfig.PropertiesToExclude));
             }
+
             if (AreSpecifiedPropertiesToInclude)
             {
                 properties = properties.Where(a => BulkConfig.PropertiesToInclude?.Contains(a.Name) ?? false);
                 ValidateSpecifiedPropertiesList(BulkConfig.PropertiesToInclude, nameof(BulkConfig.PropertiesToInclude));
             }
+
             if (AreSpecifiedPropertiesToExclude)
             {
                 properties = properties.Where(a => !BulkConfig.PropertiesToExclude?.Contains(a.Name) ?? false);
@@ -523,11 +526,13 @@ public class TableInfo
             {
                 throw new MultiplePropertyListSetException(nameof(BulkConfig.PropertiesToIncludeOnCompare), nameof(BulkConfig.PropertiesToExcludeOnCompare));
             }
+
             if (AreSpecifiedPropertiesToIncludeOnCompare)
             {
                 propertiesOnCompare = propertiesOnCompare.Where(a => BulkConfig.PropertiesToIncludeOnCompare?.Contains(a.Name) ?? false);
                 ValidateSpecifiedPropertiesList(BulkConfig.PropertiesToIncludeOnCompare, nameof(BulkConfig.PropertiesToIncludeOnCompare));
             }
+
             if (AreSpecifiedPropertiesToExcludeOnCompare)
             {
                 propertiesOnCompare = propertiesOnCompare.Where(a => !BulkConfig.PropertiesToExcludeOnCompare?.Contains(a.Name) ?? false);
@@ -538,17 +543,20 @@ public class TableInfo
         {
             propertiesOnCompare = properties;
         }
+
         if (AreSpecifiedPropertiesToIncludeOnUpdate || AreSpecifiedPropertiesToExcludeOnUpdate)
         {
             if (AreSpecifiedPropertiesToIncludeOnUpdate && AreSpecifiedPropertiesToExcludeOnUpdate)
             {
                 throw new MultiplePropertyListSetException(nameof(BulkConfig.PropertiesToIncludeOnUpdate), nameof(BulkConfig.PropertiesToExcludeOnUpdate));
             }
+
             if (AreSpecifiedPropertiesToIncludeOnUpdate)
             {
                 propertiesOnUpdate = propertiesOnUpdate.Where(a => BulkConfig.PropertiesToIncludeOnUpdate?.Contains(a.Name) ?? false);
                 ValidateSpecifiedPropertiesList(BulkConfig.PropertiesToIncludeOnUpdate, nameof(BulkConfig.PropertiesToIncludeOnUpdate));
             }
+
             if (AreSpecifiedPropertiesToExcludeOnUpdate)
             {
                 propertiesOnUpdate = propertiesOnUpdate.Where(a => !BulkConfig.PropertiesToExcludeOnUpdate?.Contains(a.Name) ?? false);
@@ -615,7 +623,7 @@ public class TableInfo
                         var ownedEntityType = ownedList.Count == 1
                              ? ownedList[0] // IsInOwnershipPath fix for with multiple parents (issue #1149)
                              : dbContext.Model.GetEntityTypes().SingleOrDefault(x => x.ClrType == property.PropertyType && x.Name.StartsWith(entityType.Name + "." + property.Name + "#"));
-                               // fix when entity has more then one ownedType (e.g. Address HomeAddress, Address WorkAddress) or one ownedType is in multiple Entities like Audit is usually.
+                        // fix when entity has more then one ownedType (e.g. Address HomeAddress, Address WorkAddress) or one ownedType is in multiple Entities like Audit is usually.
 
                         var ownedEntityProperties = ownedEntityType?.GetProperties().ToList() ?? [];
                         var ownedEntityPropertyNameColumnNameDict = new Dictionary<string, string>();
@@ -642,6 +650,7 @@ public class TableInfo
 
                             ColumnNamesTypesDict[columnName] = ownedEntityProperty.GetColumnType();
                         }
+
                         foreach (var ownedProperty in property.PropertyType.GetProperties())
                         {
                             if (ownedEntityPropertyNameColumnNameDict.TryGetValue(ownedProperty.Name, out string? columnName))
@@ -654,6 +663,7 @@ public class TableInfo
                                 {
                                     doAddProperty = false;
                                 }
+
                                 if (AreSpecifiedPropertiesToExclude && (BulkConfig.PropertiesToExclude?.Contains(ownedPropertyFullName) ?? false))
                                 {
                                     doAddProperty = false;
@@ -668,6 +678,7 @@ public class TableInfo
                                 }
                             }
                         }
+
                         IEnumerable<INavigation>? ownedTypes;
 #if NET6_0
                         ownedTypes = ownedEntityType?.GetNavigations().Where(a => a.TargetEntityType.IsOwned() && !a.TargetEntityType.IsMappedToJson());
@@ -724,8 +735,11 @@ public class TableInfo
 
     private static PropertyInfo? GetPropertyUnambiguous(Type? type, string name)
     {
-        if (name == null) throw new ArgumentNullException(nameof(name));
-        if (type == null) return null;
+        if (name == null)
+            throw new ArgumentNullException(nameof(name));
+
+        if (type == null)
+            return null;
 
         while (type != null)
         {
@@ -836,6 +850,7 @@ public class TableInfo
                 context.Database.CloseConnection();
             }
         }
+
         return tableExist;
     }
 
@@ -863,6 +878,7 @@ public class TableInfo
             {
                 throw new ArgumentException("Unable to create an instance of IDbDataParameter");
             }
+
             resultParameter.DbType = DbType.Int32;
             resultParameter.Direction = ParameterDirection.Output;
 
@@ -918,6 +934,7 @@ public class TableInfo
 
             uniqueBuilder.Append(delimiter);
         }
+
         string result = uniqueBuilder.ToString() == "null" ? "" : uniqueBuilder.ToString();
         result = result[0..^1]; // removes last delimiter
         return result;
@@ -951,6 +968,7 @@ public class TableInfo
                 {
                     propertyNames.Remove(ownedTypeName + "." + ownedTypeProperty.Name);
                 }
+
                 propertyNames.Add(ownedTypeName);
             }
         }
@@ -976,6 +994,7 @@ public class TableInfo
             {
                 existingEntity = existingEntities.ElementAt(i); // TODO check if BinaryImport with COPY on Postgres preserves order
             }
+
             if (existingEntity != null)
             {
                 foreach (var propertyName in propertyNames)
@@ -1080,6 +1099,7 @@ public class TableInfo
                     identityFastProperty.Set(entity!, IdentityColumnConverter != null ? IdentityColumnConverter.ConvertFromProvider(idValue) : idValue);
                     i++;
                 }
+
                 if (sortEntities)
                 {
                     if (identityValue != 0)
@@ -1088,6 +1108,7 @@ public class TableInfo
                         entitiesNew.Add(entity);
                 }
             }
+
             if (sortEntities)
             {
                 entitiesSorted = entitiesExistingDict.OrderBy(a => a.Key).Select(a => a.Value).ToList();
@@ -1120,6 +1141,7 @@ public class TableInfo
             var compiled = EF.CompileQuery(expression); // instead using Compiled queries
             existingEntities = compiled(context).Cast<T>().ToList();
         }
+
         return existingEntities;
     }
 
@@ -1136,9 +1158,9 @@ public class TableInfo
         string? identifierPropertyName = null;
         if (IdentityColumnName != null)
         {
-            identifierPropertyName = OutputPropertyColumnNamesDict.SingleOrDefault(a => a.Value == IdentityColumnName).Key; // is Identity autoincrement 
+            identifierPropertyName = OutputPropertyColumnNamesDict.SingleOrDefault(a => a.Value == IdentityColumnName).Key; // is Identity autoincrement
         }
-        else if (PrimaryKeysPropertyColumnNameDict.Count() == 1 && 
+        else if (PrimaryKeysPropertyColumnNameDict.Count() == 1 &&
                  DefaultValueProperties.Contains(PrimaryKeysPropertyColumnNameDict.FirstOrDefault().Key))                   // or PK with default sql value
         {
             identifierPropertyName = PrimaryKeysPropertyColumnNameDict.FirstOrDefault().Key;
@@ -1195,6 +1217,7 @@ public class TableInfo
                                 entitiesDict.Add(customPKValue, entity);
                             }
                         }
+
                         var identityPropertyValue = FastPropertyDict[identifierPropertyName].Get(entitiesWithOutputIdentity.ElementAt(i));
                         PrimaryKeysPropertyColumnNameValues customPKOutputValue = new(customPK.Select(c => FastPropertyDict[c].Get(entitiesWithOutputIdentity.ElementAt(i))));
                         FastPropertyDict[identifierPropertyName].Set(entitiesDict[customPKOutputValue]!, identityPropertyValue);
@@ -1278,6 +1301,7 @@ public class TableInfo
             UpdateEntitiesIdentity(context.DbContext, tableInfo, entities, entitiesWithOutputIdentity);
             totalNumber = entitiesWithOutputIdentity.Count;
         }
+
         if (BulkConfig.CalculateStats)
         {
             int[] statsNumbers;
@@ -1289,6 +1313,7 @@ public class TableInfo
             {
                 statsNumbers = GetStatsNumbersAsync(context.DbContext, isAsync: false, cancellationToken).GetAwaiter().GetResult();
             }
+
             BulkConfig.StatsInfo = new StatsInfo
             {
                 StatsNumberInserted = statsNumbers[0],
@@ -1340,19 +1365,20 @@ public class TableInfo
         Expression<Func<DbContext, IQueryable<T>>>? expression = null;
         if (BulkConfig.TrackingEntities) // If Else can not be replaced with Ternary operator for Expression
         {
-            expression = BulkConfig.IgnoreGlobalQueryFilters ?
-                (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery).IgnoreQueryFilters() :
-                (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery);
+            expression = BulkConfig.IgnoreGlobalQueryFilters
+                ? (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery).IgnoreQueryFilters()
+                : (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery);
         }
         else
         {
-            expression = BulkConfig.IgnoreGlobalQueryFilters ?
-                (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery).AsNoTracking().IgnoreQueryFilters() :
-                (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery).AsNoTracking();
+            expression = BulkConfig.IgnoreGlobalQueryFilters
+                ? (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery).AsNoTracking().IgnoreQueryFilters()
+                : (ctx) => ctx.Set<T>().FromSqlRaw(sqlQuery).AsNoTracking();
         }
-        return ordered ?
-            Expression.Lambda<Func<DbContext, IQueryable<T>>>(OrderBy(typeof(T), expression.Body, PrimaryKeysPropertyColumnNameDict.Select(a => a.Key).ToList()), expression.Parameters) :
-            expression;
+
+        return ordered
+            ? Expression.Lambda<Func<DbContext, IQueryable<T>>>(OrderBy(typeof(T), expression.Body, PrimaryKeysPropertyColumnNameDict.Select(a => a.Key).ToList()), expression.Parameters)
+            : expression;
 
         // ALTERNATIVELY OrderBy with DynamicLinq ('using System.Linq.Dynamic.Core;' NuGet required) that eliminates need for custom OrderBy<T> method with Expression.
         //var queryOrdered = query.OrderBy(PrimaryKeys[0]);
@@ -1419,6 +1445,7 @@ public class TableInfo
                 firstArgOrderBy = false;
             }
         }
+
         return expression;
     }
 
@@ -1438,6 +1465,7 @@ public class TableInfo
                 expression = Expression.Call(typeof(Queryable), methodName, typeArgs, expression, Expression.Quote(selectExp));
             }
         }
+
         return expression;
     }
     #endregion
@@ -1516,11 +1544,11 @@ internal class PrimaryKeysPropertyColumnNameValues
             {
                 hash = hash * 31 + (value == null ? 0 : value.GetHashCode());
             }
+
             return hash;
         }
     }
 }
-
 
 /// <summary>
 /// Provides a list of information for EFCore.BulkExtensions that is used internally to know what to do with the data source received

@@ -48,6 +48,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
         {
             dbContext.Database.OpenConnection();
         }
+
         var connection = dbContext.GetUnderlyingConnection(tableInfo.BulkConfig);
         try
         {
@@ -85,6 +86,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
                 dbContext.Database.CloseConnection();
             }
         }
+
         if (!tableInfo.CreateOutputTable)
         {
             tableInfo.CheckToSetIdentityForPreserveOrder(tableInfo, entities, reset: true);
@@ -134,6 +136,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(sqlCreateTableCopy);
                 }
+
                 tempTableCreated = true;
             }
 
@@ -161,6 +164,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(createUniqueConstrain);
                 }
+
                 uniqueConstrainCreated = true;
             }
 
@@ -177,6 +181,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(sqlCreateOutputTableCopy);
                 }
+
                 outputTableCreated = true;
             }
 
@@ -201,6 +206,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
             {
                 dbContext.Database.ExecuteSqlRaw(sqlMergeTable);
             }
+
             if (tableInfo.CreateOutputTable)
             {
                 if (isAsync)
@@ -268,6 +274,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
                     }
 
                 }
+
                 if (tempTableCreated)
                 {
                     var sqlDropTable = ProviderSqlQueryBuilder.DropTable(tableInfo.FullTempTableName, tableInfo.BulkConfig.UseTempDB);
@@ -280,6 +287,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
                         dbContext.Database.ExecuteSqlRaw(sqlDropTable);
                     }
                 }
+
                 if (hasExistingTransaction == false && !tableInfo.BulkConfig.IncludeGraph && transaction != null)
                 {
                     if (isAsync)
@@ -340,8 +348,10 @@ public class MySqlAdapter : ISqlOperationsAdapter
             {
                 connection.Open();
             }
+
             oonnectionOpenedInternally = true;
         }
+
         return (connection, oonnectionOpenedInternally);
     }
 
@@ -383,6 +393,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
                 }
             }
         }
+
         return (hasUniqueConstrain, connectionOpenedInternally);
     }
 
@@ -440,6 +451,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
             mySqlBulkCopy.ColumnMappings.Add(new MySqlBulkCopyColumnMapping(sourceOrdinal,item.ColumnName));
             sourceOrdinal++;
         }
+
         return dataTable;
     }
 
@@ -648,6 +660,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
             dataTable.Columns.Add(discriminatorColumn, discriminatorProperty.ClrType);
             columnsDict.Add(discriminatorColumn, entityType.GetDiscriminatorValue());
         }
+
         bool hasConverterProperties = tableInfo.ConvertiblePropertyColumnDict.Count > 0;
 
         foreach (T entity in entities)
@@ -780,6 +793,7 @@ public class MySqlAdapter : ISqlOperationsAdapter
             var stringColumns = tableInfo.ColumnNamesTypesDict.Where(a => a.Value.Contains("char")).Select(a => a.Key).ToList();
             discriminatorColumn = tableInfo.ShadowProperties.Where(a => stringColumns.Contains(a)).ElementAt(0);
         }
+
         return discriminatorColumn;
     }
     #endregion

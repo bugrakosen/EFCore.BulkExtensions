@@ -96,8 +96,10 @@ public class EFCoreBulkUnderlyingTest
                 {
                     subEntity.ItemId = entity.ItemId; // setting FK to match its linked PK that was generated in DB
                 }
+
                 subEntities.AddRange(entity.ItemHistories);
             }
+
             context.BulkInsert(subEntities, new BulkConfig()
             {
                 UnderlyingConnection = GetUnderlyingConnection,

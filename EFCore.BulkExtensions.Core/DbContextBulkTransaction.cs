@@ -12,7 +12,8 @@ internal static class DbContextBulkTransaction
     {
         using (ActivitySources.StartExecuteActivity(operationType, entities.Count()))
         {
-            if (!IsValidTransaction(entities, operationType, bulkConfig)) return;
+            if (!IsValidTransaction(entities, operationType, bulkConfig))
+                return;
 
             if (operationType == OperationType.SaveChanges)
             {
@@ -53,7 +54,8 @@ internal static class DbContextBulkTransaction
     {
         using (ActivitySources.StartExecuteActivity(operationType, entities.Count()))
         {
-            if (!IsValidTransaction(entities, operationType, bulkConfig)) return;
+            if (!IsValidTransaction(entities, operationType, bulkConfig))
+                return;
 
             if (operationType == OperationType.SaveChanges)
             {

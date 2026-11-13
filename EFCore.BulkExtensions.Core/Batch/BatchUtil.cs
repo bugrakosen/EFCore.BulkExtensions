@@ -102,6 +102,7 @@ public static class BatchUtil
             {
                 npgsqlParameters.Add(context.QueryBuilder.CreateParameter(param.ParameterName, param.Value));
             }
+
             innerParameters = npgsqlParameters;
         }
 
@@ -155,7 +156,7 @@ public static class BatchUtil
         CreateUpdateBody(context, createUpdateBodyData, expression.Body);
 
         var sqlParameters = ReloadSqlParameters(context, createUpdateBodyData.SqlParameters); // Sqlite requires SqliteParameters
-        var sqlColumns = (createUpdateBodyData.DatabaseType == SqlType.SqlServer) 
+        var sqlColumns = (createUpdateBodyData.DatabaseType == SqlType.SqlServer)
             ? createUpdateBodyData.UpdateColumnsSql
             : createUpdateBodyData.UpdateColumnsSql.Replace($"[{tableAlias}].", "");
 
@@ -190,8 +191,10 @@ public static class BatchUtil
                 string tableAliasPrefix = "[" + tableAlias + "].";
                 sqlSET = sqlSET.Replace(tableAliasPrefix, "");
             }
+
             resultQuery = $"WITH C AS (SELECT {topStatement}*{sql}) UPDATE C SET {sqlSET}";
         }
+
         if (resultQuery.Contains("ORDER") && !resultQuery.Contains("TOP")) // When query has ORDER only without TOP(Take) then it is removed since not required and to avoid invalid Sql
         {
             resultQuery = resultQuery.Split("ORDER", StringSplitOptions.None)[0];
@@ -217,6 +220,7 @@ public static class BatchUtil
 
                 npgsqlParameters.Add(npgsqlParam);
             }
+
             sqlParameters = npgsqlParameters;
         }
         else if (databaseType == SqlType.MySql)
@@ -238,6 +242,7 @@ public static class BatchUtil
 
                 mysqlParameters.Add(mysqlParam);
             }
+
             sqlParameters = mysqlParameters;
         }
         else if (databaseType == SqlType.Oracle)
@@ -259,6 +264,7 @@ public static class BatchUtil
 
                 mysqlParameters.Add(mysqlParam);
             }
+
             sqlParameters = mysqlParameters;
         }
 
@@ -395,10 +401,12 @@ public static class BatchUtil
                 }
             }
         }
+
         if (string.IsNullOrEmpty(sql))
         {
             throw new InvalidOperationException("SET Columns not defined. If one or more columns should be updated to theirs default value use 'updateColumns' argument.");
         }
+
         sql = sql.Remove(sql.Length - 2, 2); // removes last excess comma and space: ", "
         return $"SET {sql}";
     }
@@ -571,6 +579,7 @@ public static class BatchUtil
             var providerProp = query.Provider.GetType().GetProperties(bindingFlags).FirstOrDefault(x => x.PropertyType == typeof(IQueryProvider));
             provider = providerProp?.GetValue(query.Provider) as IQueryProvider ?? throw new NotSupportedException($"Could not an EntityQueryProvider either directly or from a wrapped instance");
         }
+
         var queryCompiler = typeof(EntityQueryProvider).GetField("_queryCompiler", bindingFlags)?.GetValue(provider);
 
         var queryContextFactory = queryCompiler?.GetType().GetField("_queryContextFactory", bindingFlags)?.GetValue(queryCompiler);
@@ -594,7 +603,7 @@ public static class BatchUtil
     {
         var leadingCommentsBuilder = new StringBuilder();
         var mainSqlQuery = sqlQuery;
-        while (!string.IsNullOrWhiteSpace(mainSqlQuery) 
+        while (!string.IsNullOrWhiteSpace(mainSqlQuery)
             && !mainSqlQuery.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
         {
             if (mainSqlQuery.StartsWith("--"))
@@ -670,7 +679,7 @@ public static class BatchUtil
         sqlColumns.Append($" {paramName}");
     }
 
-    private static readonly MethodInfo? DbContextSetMethodInfo =
+    private static readonly MethodInfo? _dbContextSetMethodInfo =
         typeof(DbContext).GetMethod(nameof(DbContext.Set), BindingFlags.Public | BindingFlags.Instance, null, Array.Empty<Type>(), null);
 
     /// <summary>
@@ -775,6 +784,7 @@ public static class BatchUtil
                             expressionStack.Push(new ExpressionNode(argumentExpression, currentExpressionNode));
                         }
                     }
+
                     break;
 
                 case LambdaExpression currentLambdaExpression:
@@ -824,7 +834,7 @@ public static class BatchUtil
         IQueryable? innerQueryable;
         if (isFirstNavigationACollectionType == true)
         {
-            var dbSetGenericMethod = DbContextSetMethodInfo?.MakeGenericMethod(createBodyData.RootType);
+            var dbSetGenericMethod = _dbContextSetMethodInfo?.MakeGenericMethod(createBodyData.RootType);
             var dbSetQueryable = (IQueryable?)dbSetGenericMethod?.Invoke(createBodyData.DbContext, null);
 
             var rootParameter = originalParameterNode?.Expression as ParameterExpression;
@@ -837,7 +847,7 @@ public static class BatchUtil
         }
         else
         {
-            var dbSetGenericMethod = firstNavigationType is null ? null : DbContextSetMethodInfo?.MakeGenericMethod(firstNavigationType);
+            var dbSetGenericMethod = firstNavigationType is null ? null : _dbContextSetMethodInfo?.MakeGenericMethod(firstNavigationType);
             var dbSetQueryable = (IQueryable?)dbSetGenericMethod?.Invoke(createBodyData.DbContext, null);
 
             var rootParamterName = $"x{firstMemberExpression?.Member.Name}";
@@ -887,6 +897,7 @@ public static class BatchUtil
                                 wasNodeHandled = true;
                             }
                         }
+
                         break;
 
                     case UnaryExpression currentUnaryExpression:
@@ -895,6 +906,7 @@ public static class BatchUtil
                             lambdaBody = Expression.MakeUnary(currentUnaryExpression.NodeType, lambdaBody, currentUnaryExpression.Type);
                             wasNodeHandled = true;
                         }
+
                         break;
 
                     case BinaryExpression currentBinaryExpression:
@@ -908,6 +920,7 @@ public static class BatchUtil
                             lambdaBody = Expression.MakeBinary(currentBinaryExpression.NodeType, currentBinaryExpression.Left, lambdaBody);
                             wasNodeHandled = true;
                         }
+
                         break;
 
                     case LambdaExpression currentLambdaExpression:
@@ -916,6 +929,7 @@ public static class BatchUtil
                             lambdaBody = Expression.Lambda(lambdaBody, currentLambdaExpression.Parameters);
                             wasNodeHandled = true;
                         }
+
                         break;
 
                     case ConditionalExpression currentConditionalExpression:
@@ -934,6 +948,7 @@ public static class BatchUtil
                             lambdaBody = Expression.Condition(currentConditionalExpression.Test, currentConditionalExpression.IfTrue, lambdaBody, currentConditionalExpression.Type);
                             wasNodeHandled = true;
                         }
+
                         break;
 
                     default:
@@ -1083,7 +1098,6 @@ public static class BatchUtil
             {
                 innerSql = innerSql + '\n' + whereClauseCondition.ToString();
             }
-
         }
 
         createBodyData?.UpdateColumnsSql.Append(" (\n    ").Append(innerSql.Replace("\n", "\n    ")).Append(')');
@@ -1098,7 +1112,7 @@ public static class BatchUtil
     public class ExpressionNode
     {
 #pragma warning disable CS1591 // No XML comment required here. Used internally only
-        public ExpressionNode (Expression expression, ExpressionNode? parent)
+        public ExpressionNode(Expression expression, ExpressionNode? parent)
         {
             Expression = expression;
             Parent = parent;

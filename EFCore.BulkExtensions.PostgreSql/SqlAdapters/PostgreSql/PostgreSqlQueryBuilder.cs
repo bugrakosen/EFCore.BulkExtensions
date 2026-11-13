@@ -30,6 +30,7 @@ public class PostgreSqlQueryBuilder : SqlQueryBuilder
         {
             keywordPrefix = "UNLOGGED ";
         }
+
         var q = @$"CREATE {keywordPrefix}TABLE IF NOT EXISTS {newTableName} (""xmaxNumber"" xid)"; // col name can't be just 'xmax' - conflicts with system column
         q = q.Replace("[", @"""").Replace("]", @"""");
         return q;
@@ -53,6 +54,7 @@ public class PostgreSqlQueryBuilder : SqlQueryBuilder
         {
             keywordPrefix = "UNLOGGED ";
         }
+
         var q = $"CREATE {keywordPrefix}TABLE {newTableName} " +
                 $"AS TABLE {existingTableName} " +
                 $"WITH NO DATA;";
@@ -143,6 +145,7 @@ public class PostgreSqlQueryBuilder : SqlQueryBuilder
                 //  PKs can be all set or all empty in which case DB generates it, can not have it combined in one list when using InsetOrUpdate  
                 columnsListInsert = columnsList.Where(tableInfo.PropertyColumnNamesUpdateDict.ContainsValue).ToList();
             }
+
             var commaSeparatedColumns = SqlQueryBuilder.GetCommaSeparatedColumns(columnsListInsert).Replace("[", @"""").Replace("]", @"""");
 
             var updateByColumns = SqlQueryBuilder.GetCommaSeparatedColumns(tableInfo.PrimaryKeysPropertyColumnNameDict.Values.ToList()).Replace("[", @"""").Replace("]", @"""");
@@ -166,6 +169,7 @@ public class PostgreSqlQueryBuilder : SqlQueryBuilder
             {
                 q += $" WHERE {tableInfo.BulkConfig.OnConflictUpdateWhereSql(tableInfo.FullTableName.Replace("[", @"""").Replace("]", @""""), "EXCLUDED")}";
             }
+
             appendReturning = true;
         }
 
@@ -201,6 +205,7 @@ public class PostgreSqlQueryBuilder : SqlQueryBuilder
                     qSegmentUpdated = qSegmentUpdated.Replace(propertyFormated, $@"""{sourceProperty}""");
                 }
             }
+
             if (qSegment != qSegmentUpdated)
             {
                 q = q.Replace(qSegment, qSegmentUpdated);
@@ -322,6 +327,7 @@ public class PostgreSqlQueryBuilder : SqlQueryBuilder
             q += $"WHERE (tc.CONSTRAINT_TYPE = 'UNIQUE' OR tc.CONSTRAINT_TYPE = 'PRIMARY KEY') " +
                  $"AND tc.TABLE_NAME = '{tableInfo.TableName}' AND tc.TABLE_SCHEMA = '{tableInfo.Schema}'";
         }
+
         return q;
     }
 

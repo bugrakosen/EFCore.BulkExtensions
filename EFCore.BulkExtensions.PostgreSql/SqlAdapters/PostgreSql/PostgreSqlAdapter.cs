@@ -33,7 +33,8 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
     /// <inheritdoc/>
     protected static async Task InsertAsync<T>(BulkContext context, IEnumerable<T> entities, TableInfo tableInfo, Action<decimal>? progress, bool isAsync, CancellationToken cancellationToken)
     {
-        if (entities == null || !entities.Any()) return;
+        if (entities == null || !entities.Any())
+            return;
 
         var dbContext = context.DbContext;
         var (connection, closeConnectionInternally) = await GetOrCreateConnection(context, isAsync, cancellationToken).ConfigureAwait(false);
@@ -78,18 +79,18 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                     }
 
                     var propertyValue = GetPropertyValue(dbContext, tableInfo, propertyName, entity);
-                    var propertyColumnName = tableInfo.PropertyColumnNamesDict.GetValueOrDefault(propertyName, "");   
-                    
+                    var propertyColumnName = tableInfo.PropertyColumnNamesDict.GetValueOrDefault(propertyName, "");
+
                     // NB: for JSONb columns, we write the parameter value as the raw POCO type.
                     // User should configure JSON options on NpgsqlDataSourceBuilder
                     // See: https://www.npgsql.org/doc/types/json.html?tabs=datasource#poco-mapping
-                    
+
                     // TODO: Try get JSON options from connection (fallback to default), then serialize to JSON manually
                     // However it doesn't seem to be possible to get the JsonSerializerSettings from the connection currently.
-                    var columnType = tableInfo.OwnedJsonTypesDict.ContainsKey(propertyColumnName) 
-                        ? "jsonb" 
+                    var columnType = tableInfo.OwnedJsonTypesDict.ContainsKey(propertyColumnName)
+                        ? "jsonb"
                         : tableInfo.ColumnNamesTypesDict[propertyColumnName];
-                    
+
                     // string is 'text' which works fine
                     if (columnType.StartsWith("character"))   // when MaxLength is defined: 'character(1)' or 'character varying'
                         columnType = "character";             // 'character' is like 'string'
@@ -151,12 +152,14 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                         writer.Write(propertyValue, columnType);
                     }
                 }
+
                 entitiesCopiedCount++;
                 if (progress != null && entitiesCopiedCount % tableInfo.BulkConfig.NotifyAfter == 0)
                 {
                     progress?.Invoke(ProgressHelper.GetProgress(entities.Count(), entitiesCopiedCount));
                 }
             }
+
             if (isAsync)
             {
                 await writer.CompleteAsync(cancellationToken).ConfigureAwait(false);
@@ -205,8 +208,10 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                 {
                     propertyValueInner = tableInfo.ConvertibleColumnConverterDict[propertyName].ConvertToProvider.Invoke(propertyValueInner);
                 }
+
                 return propertyValueInner;
             }
+
             return null;
         }
 
@@ -230,6 +235,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
 
             propertyValue = tableInfo.FastPropertyDict[fullPropertyName].Get(propertyValue);
         }
+
         return propertyValue;
     }
 
@@ -271,6 +277,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(sqlCreateTableCopy);
                 }
+
                 tempTableCreated = true;
             }
 
@@ -285,6 +292,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                 {
                     dbContext.Database.ExecuteSqlRaw(sqlCreateOutputTableCopy);
                 }
+
                 outputTableCreated = true;
             }
 
@@ -314,6 +322,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                     dbContext.Database.ExecuteSqlRaw(createUniqueIndex);
                     //context.Database.ExecuteSqlRaw(createUniqueConstrain); // UniqueConstrain Not needed
                 }
+
                 uniqueIndexCreated = true;
             }
 
@@ -371,6 +380,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                 {
                     numberInserted = GetStatsNumbersPGAsync(dbContext, tableInfo, isAsync: false, cancellationToken).GetAwaiter().GetResult();
                 }
+
                 tableInfo.BulkConfig.StatsInfo = new StatsInfo
                 {
                     StatsNumberInserted = numberInserted,
@@ -487,8 +497,10 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
             {
                 connection.Open();
             }
+
             oonnectionOpenedInternally = true;
         }
+
         return (connection, oonnectionOpenedInternally);
     }
 
@@ -526,6 +538,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                 }
             }
         }
+
         return (hasUniqueConstrain, connectionOpenedInternally);
     }
     #endregion
@@ -557,7 +570,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
                 isExtenalTransaction = true;
             }
 
-            var dbTransaction = isExtenalTransaction ? context.Database.CurrentTransaction?.GetUnderlyingTransaction(tableInfo.BulkConfig) 
+            var dbTransaction = isExtenalTransaction ? context.Database.CurrentTransaction?.GetUnderlyingTransaction(tableInfo.BulkConfig)
                                                      : connection.BeginTransaction();
             var transaction = (NpgsqlTransaction?)dbTransaction;
 
@@ -575,6 +588,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
         finally
         {
         }
+
         return (int)counter;
     }
     #endregion
@@ -593,6 +607,7 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
         {
             defaultSchema = csb.SearchPath.Split(',')[0];
         }
+
         return defaultSchema;
     }
 
@@ -601,7 +616,9 @@ public class PostgreSqlAdapter : ISqlOperationsAdapter
         var closeConnectionInternally = false;
         var connection = (NpgsqlConnection?)context.DbConnection;
 
-        if (connection != null) return (connection, closeConnectionInternally);
+        if (connection != null)
+            return (connection, closeConnectionInternally);
+
         return await ReopenConnection(context, isAsync, cancellationToken).ConfigureAwait(false);
     }
 

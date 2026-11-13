@@ -48,6 +48,7 @@ public static class IQueryableBatchExtensions
         {
             throw new ArgumentException("Unable to determine context");
         }
+
         var context = BulkContext.Create(dbContext);
         var (sql, sqlParameters) = BatchUtil.GetSqlDelete(query, context);
         return (dbContext, sql, sqlParameters);
@@ -125,6 +126,7 @@ public static class IQueryableBatchExtensions
         {
             throw new ArgumentException("Unable to determine context");
         }
+
         var context = BulkContext.Create(dbContext);
         var (sql, sqlParameters) = updateExpression == null ? BatchUtil.GetSqlUpdate(query, context, type, updateValues, updateColumns)
                                                             : BatchUtil.GetSqlUpdate(query, context, type, updateExpression);

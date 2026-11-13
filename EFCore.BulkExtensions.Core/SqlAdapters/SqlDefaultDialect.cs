@@ -10,7 +10,7 @@ namespace EFCore.BulkExtensions.SqlAdapters;
 /// <inheritdoc/>
 public class SqlDefaultDialect : IQueryBuilderSpecialization
 {
-    private static readonly int SelectStatementLength = "SELECT".Length;
+    private static readonly int _selectStatementLength = "SELECT".Length;
 
     /// <inheritdoc/>
     public virtual List<DbParameter> ReloadSqlParameters(DbContext context, List<DbParameter> sqlParameters)
@@ -41,8 +41,10 @@ public class SqlDefaultDialect : IQueryBuilderSpecialization
                     throw;
                 }
             }
+
             sqlParametersReloaded.Add(sqlParameter);
         }
+
         return sqlParametersReloaded;
     }
 
@@ -63,7 +65,8 @@ public class SqlDefaultDialect : IQueryBuilderSpecialization
             escapeSymbolEnd = "`.";
             escapeSymbolStart = "`";
         }
-        var tableAliasEnd = sqlQuery[SelectStatementLength..sqlQuery.IndexOf(escapeSymbolEnd, StringComparison.Ordinal)]; // " TOP(10) [table_alias" / " [table_alias" : " table_alias"
+
+        var tableAliasEnd = sqlQuery[_selectStatementLength..sqlQuery.IndexOf(escapeSymbolEnd, StringComparison.Ordinal)]; // " TOP(10) [table_alias" / " [table_alias" : " table_alias"
         var tableAliasStartIndex = tableAliasEnd.IndexOf(escapeSymbolStart, StringComparison.Ordinal);
         var tableAlias = tableAliasEnd[(tableAliasStartIndex + escapeSymbolStart.Length)..]; // "table_alias"
         var topStatement = tableAliasEnd[..tableAliasStartIndex].TrimStart(); // "TOP(10) " / if TOP not present in query this will be a Substring(0,0) == ""

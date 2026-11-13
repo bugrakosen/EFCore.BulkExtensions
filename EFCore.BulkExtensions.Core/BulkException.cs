@@ -49,7 +49,6 @@ public class InvalidBulkConfigException : Exception
     */
 }
 
-
 [Serializable]
 class ColumnMappingExceptionMessage : InvalidBulkConfigException
 {
@@ -60,6 +59,6 @@ class ColumnMappingExceptionMessage : InvalidBulkConfigException
 class MultiplePropertyListSetException : InvalidBulkConfigException
 {
     public MultiplePropertyListSetException() { }
-    public MultiplePropertyListSetException(string propertyList1Name, string PropertyList2Name)
-        : base(string.Format(BulkExceptionMessage.SpecifiedDoubleConfigLists, propertyList1Name, PropertyList2Name)) { }
+    public MultiplePropertyListSetException(string propertyList1Name, string propertyList2Name)
+        : base(string.Format(BulkExceptionMessage.SpecifiedDoubleConfigLists, propertyList1Name, propertyList2Name)) { }
 }

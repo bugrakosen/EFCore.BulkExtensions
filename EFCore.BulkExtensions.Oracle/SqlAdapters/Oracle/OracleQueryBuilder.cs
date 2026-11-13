@@ -27,6 +27,7 @@ public class OracleQueryBuilder : SqlQueryBuilder
             var firstPrimaryKey = tableInfo.EntityPKPropertyColumnNameDict?.FirstOrDefault().Value ?? tableInfo.IdentityColumnName;
             selectColummns = firstPrimaryKey ?? "*";
         }
+
         string keywordTemp = useTempDb ? "GLOBAL TEMPORARY " : "";
         var query = $@"CREATE {keywordTemp}TABLE {newTableName} AS SELECT {selectColummns} FROM {existingTableName} WHERE 1=0";
 
@@ -198,6 +199,7 @@ END;";
                 q = q.Replace(qSegment, qSegmentUpdated);
             }
         }
+
         return q;
     }
     /// <summary>
@@ -296,6 +298,7 @@ END;";
         {
             uniqueConstrainNameText = Md5Hash(uniqueConstrainNameText);
         }
+
         string uniqueConstrainName = uniqueConstrainPrefix + uniqueConstrainNameText;
         return uniqueConstrainName;
     }
@@ -325,6 +328,7 @@ END;";
 
             sql = sql.Replace($"UPDATE {firstLetterOfTable}", "UPDATE" + tableAS);
         }
+
         sql = sql.Replace("[", "").Replace("]", "");
 
         return sql;

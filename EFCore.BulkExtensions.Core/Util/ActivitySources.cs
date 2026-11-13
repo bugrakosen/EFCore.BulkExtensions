@@ -8,7 +8,7 @@ namespace EFCore.BulkExtensions;
 /// </summary>
 public static class ActivitySources
 {
-    private static readonly ActivitySource ActivitySource = new ("EFCore.BulkExtensions");
+    private static readonly ActivitySource _activitySource = new("EFCore.BulkExtensions");
 
     /// <summary>
     /// Starts the activity
@@ -18,7 +18,7 @@ public static class ActivitySources
     /// <returns></returns>
     public static Activity? StartExecuteActivity(OperationType operationType, int entitiesCount)
     {
-        var activity = ActivitySource.StartActivity("EFCore.BulkExtensions.BulkExecute");
+        var activity = _activitySource.StartActivity("EFCore.BulkExtensions.BulkExecute");
         if (activity != null)
         {
             activity.AddTag("operationType", operationType.ToString("G"));

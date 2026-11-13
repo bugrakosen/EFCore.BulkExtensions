@@ -10,8 +10,8 @@ namespace EFCore.BulkExtensions;
 /// </summary>
 public class FastProperty
 {
-    private static readonly ConcurrentDictionary<PropertyInfo, FastProperty> FastPropertyCache = new();
-    
+    private static readonly ConcurrentDictionary<PropertyInfo, FastProperty> _fastPropertyCache = new();
+
     /// <summary>
     /// Get or create a <see cref="FastProperty"/> instance for getting/setting the given property.
     /// </summary>
@@ -21,9 +21,9 @@ public class FastProperty
     /// </returns>
     public static FastProperty GetOrCreate(PropertyInfo property)
     {
-        return FastPropertyCache.GetOrAdd(property, p => new FastProperty(p));
+        return _fastPropertyCache.GetOrAdd(property, p => new FastProperty(p));
     }
-    
+
     private Func<object, object>? _getDelegate;
     private Action<object, object>? _setDelegate;
 
@@ -83,7 +83,6 @@ public class FastProperty
 
 #pragma warning disable CS1591 // No XML comment required here
     public PropertyInfo Property { get; set; }
-
 
     /// <summary>
     /// Returns the object
